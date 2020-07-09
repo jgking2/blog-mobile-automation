@@ -1,0 +1,14 @@
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
+
+app_identifier("com.jgking.demos") # The bundle identifier of your app
+apple_id("josephgkingii@gmail.com")
+
+itc_team_id("118578186") # App Store Connect Team ID
+team_id("8S4EY54Z3W") # Developer Portal Team ID
+
+for_platform :ios do
+    for_lane :adhoc do
+        app_identifier 'com.jgking.demos.adhoc'
+    end
+end

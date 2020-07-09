@@ -1,0 +1,49 @@
+name: iOS Build/Distribution
+
+on:
+  push:
+    branches:
+      - prerelease/ios
+      - release/ios
+
+jobs:
+  ios-build-and-upload:
+    runs-on: macos-latest
+    env:
+      FASTLANE_LANE: adhoc
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+      GITHUBACCESSTOKEN: ${{ secrets.GITHUBACCESSTOKEN }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Cache node_modules
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      # - name: Send to TestFlight?
+      #   if: github.ref == 'release/ios' #At the top level, it's checked whether it's web or not
+      #   run: |
+      #     echo "::set-env name=FASTLANE_LANE::beta"
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-node-
+      # - name: Cache Pods
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: Pods
+      #     key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pods-
+      # - run: npm install
+      # - name: Download firebase-tools
+      #   run: npm i -g firebase-tools
+      # - name: Build and upload to target destination
+      #   run: |
+      #     cd ios
+      #     pod install
+      #     fastlane $FASTLANE_LANE

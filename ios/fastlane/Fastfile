@@ -1,0 +1,80 @@
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+default_platform(:ios)
+
+platform :ios do
+  private_lane :build do |options|
+    export_type = options[:release] ? "appstore" : "adhoc"
+    
+    # Fetches value from the Appfile
+    identifier = CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+    # 202002220122 (Year Month Day Hour Minute)
+    build_number = Time.new.strftime("%Y%m%d%H%M")
+
+    setup_ci
+    match(
+      git_url: "https://github.com/jgking2/match-demo",
+      type: export_type,
+      readonly: true
+    )
+    increment_build_number(
+      build_number: build_number
+    )
+    # Output from sigh
+    profile_path = ENV["sigh_#{identifier}_#{export_type}_profile-path"]
+    update_project_provisioning(
+      xcodeproj: "AwesomeProject.xcodeproj",
+      profile: profile_path,
+      target_filter: "AwesomeProject",
+      build_configuration: "Release"
+    )
+    gym(
+      scheme: "AwesomeProject", 
+      workspace: "AwesomeProject.xcworkspace",
+      export_method: options[:release] ? "app-store" : "ad-hoc",
+      skip_profile_detection: true
+    )
+  end
+
+  private_lane :staging_metadata do
+    update_app_identifier(
+      plist_path: "AwesomeProject/Info.plist", # Path to info plist file, relative to xcodeproj
+      app_identifier: "com.jgking.demos.adhoc" # The App Identifier
+    )
+    
+    update_info_plist( # Advanced processing: find URL scheme for particular key and replace value
+      display_name: "AwesomeProject (Staging)",
+      plist_path: "AwesomeProject/Info.plist"
+    )
+  end
+
+  private_lane :production_metadata do
+    update_app_identifier(
+      plist_path: "AwesomeProject/Info.plist", # Path to info plist file, relative to xcodeproj
+      app_identifier: "com.jgking.demos" # The App Identifier
+    )
+    update_info_plist( 
+      display_name: "AwesomeProject",
+      plist_path: "AwesomeProject/Info.plist"
+    )
+  end
+
+
+  lane :beta do
+    production_metadata
+    build(release:true)
+    #save some minutes on the build
+    testflight(skip_waiting_for_build_processing: true)
+  end
+
+  # Firebase Distribution
+  lane :adhoc do 
+    staging_metadata
+    build(release:false)
+    firebase_app_distribution(
+      app: "1:249814930785:ios:4ffa115c91c8753fb5a120",
+      testers: "jgkingii@gmail.com",
+      release_notes: "Lots of amazing new features!"
+    )
+  end
+end
