@@ -17,7 +17,6 @@ jobs:
       GITHUBACCESSTOKEN: ${{ secrets.GITHUBACCESSTOKEN }}
     steps:
       - uses: actions/checkout@v1
-      - name: Cache node_modules
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
@@ -26,6 +25,7 @@ jobs:
       #   if: github.ref == 'release/ios' #At the top level, it's checked whether it's web or not
       #   run: |
       #     echo "::set-env name=FASTLANE_LANE::beta"
+      # - name: Cache node_modules
       #   uses: actions/cache@v2
       #   with:
       #     path: ~/.npm
