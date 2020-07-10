@@ -15,7 +15,8 @@ platform :ios do
     match(
       git_url: "https://github.com/jgking2/match-demo",
       type: export_type,
-      readonly: true
+      readonly: true,
+      git_basic_authorization: ENV["BASIC_AUTH_TOKEN"]
     )
     increment_build_number(
       build_number: build_number
